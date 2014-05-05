@@ -1,5 +1,16 @@
 *.[oa]
 *.so
+*.suo
 *.sw?
 build
+*.sdf
+*.opensdf
+*.filters
+CMakeCache.txt
+*.cmake
+CMakeFiles
+Win32
+src/lua
+luv.dir
+
 

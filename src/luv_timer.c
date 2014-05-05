@@ -15,10 +15,11 @@ static void _timer_cb(uv_timer_t* handle, int status) {
 
 static int luv_new_timer(lua_State* L) {
   luv_object_t* self = (luv_object_t*)lua_newuserdata(L, sizeof(luv_object_t));
+  luv_state_t* curr;
   luaL_getmetatable(L, LUV_TIMER_T);
   lua_setmetatable(L, -2);
 
-  luv_state_t* curr = luvL_state_self(L);
+  curr = luvL_state_self(L);
   uv_timer_init(luvL_event_loop(L), &self->h.timer);
   luvL_object_init(curr, self);
 

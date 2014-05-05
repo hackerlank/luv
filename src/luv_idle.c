@@ -14,10 +14,11 @@ static void _idle_cb(uv_idle_t* handle, int status) {
 
 static int luv_new_idle(lua_State* L) {
   luv_object_t* self = (luv_object_t*)lua_newuserdata(L, sizeof(luv_object_t));
+  luv_state_t* curr;
   luaL_getmetatable(L, LUV_IDLE_T);
   lua_setmetatable(L, -2);
 
-  luv_state_t* curr = luvL_state_self(L);
+  curr = luvL_state_self(L);
   uv_idle_init(luvL_event_loop(L), &self->h.idle);
   luvL_object_init(curr, self);
 

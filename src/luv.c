@@ -309,6 +309,7 @@ LUALIB_API int luaopen_luv(lua_State *L) {
   uv_loop_t*    loop;
   luv_state_t*  curr;
   luv_object_t* stdfh;
+  const char* stdfhs[] = { "stdin", "stdout", "stderr" };
 
   lua_settop(L, 0);
 
@@ -383,8 +384,7 @@ LUALIB_API int luaopen_luv(lua_State *L) {
     MAIN_INITIALIZED = 1;
     loop = luvL_event_loop(L);
     curr = luvL_state_self(L);
-
-    const char* stdfhs[] = { "stdin", "stdout", "stderr" };
+    
     for (i = 0; i < 3; i++) {
 #ifdef WIN32
       const uv_file fh = GetStdHandle(i == 0 ? STD_INPUT_HANDLE

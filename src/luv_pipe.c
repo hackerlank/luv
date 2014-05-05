@@ -2,9 +2,9 @@
 
 static int luv_new_pipe(lua_State* L) {
   luv_object_t* self = (luv_object_t*)lua_newuserdata(L, sizeof(luv_object_t));
+  int ipc = 0;
   luaL_getmetatable(L, LUV_PIPE_T);
   lua_setmetatable(L, -2);
-  int ipc = 0;
   if (!lua_isnoneornil(L, 2)) {
     luaL_checktype(L, 2, LUA_TBOOLEAN);
     ipc = lua_toboolean(L, 2);

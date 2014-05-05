@@ -305,20 +305,20 @@ extern luaL_Reg luv_zmq_socket_meths[32];
 #endif
 
 #ifdef WIN32
-#  ifdef LUV_EXPORT
-#    define LUALIB_API __declspec(dllexport)
+#  ifdef luv_EXPORTS
+#    define LUVLIB_API __declspec(dllexport)
 #  else
-#    define LUALIB_API __declspec(dllimport)
+#    define LUVLIB_API __declspec(dllimport)
 #  endif
 #else
-#  define LUALIB_API LUA_API
+#  define LUVLIB_API LUA_API
 #endif
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-LUALIB_API int luaopen_luv(lua_State *L);
+LUVLIB_API int luaopen_luv(lua_State *L);
 
 #ifdef __cplusplus
 }

@@ -14,8 +14,8 @@ void luvL_connect_cb(uv_connect_t* req, int status) {
 }
 
 static void _read_cb(uv_stream_t* stream, ssize_t len, uv_buf_t buf) {
-  TRACE("got data\n");
   luv_object_t* self  = container_of(stream, luv_object_t, h);
+  TRACE("got data\n");
 
   if (ngx_queue_empty(&self->rouse)) {
     TRACE("empty read queue, save buffer and stop read\n");
@@ -33,9 +33,9 @@ static void _read_cb(uv_stream_t* stream, ssize_t len, uv_buf_t buf) {
     }
   }
   else {
-    TRACE("have states waiting...\n");
     ngx_queue_t* q;
     luv_state_t* s;
+	TRACE("have states waiting...\n");
 
     q = ngx_queue_head(&self->rouse);
     s = ngx_queue_data(q, luv_state_t, cond);
@@ -92,19 +92,21 @@ static void _shutdown_cb(uv_shutdown_t* req, int status) {
 }
 
 static void _listen_cb(uv_stream_t* server, int status) {
-  TRACE("got client connection...\n");
   luv_object_t* self = container_of(server, luv_object_t, h);
+  TRACE("got client connection...\n");
   if (luvL_object_is_waiting(self)) {
     ngx_queue_t* q = ngx_queue_head(&self->rouse);
     luv_state_t* s = ngx_queue_data(q, luv_state_t, cond);
     lua_State* L = s->L;
+	luv_object_t* conn;
+	int rv ;
 
     TRACE("is waiting..., lua_State*: %p\n", L);
     luaL_checktype(L, 2, LUA_TUSERDATA);
-    luv_object_t* conn = (luv_object_t*)lua_touserdata(L, 2);
+    conn = (luv_object_t*)lua_touserdata(L, 2);
     TRACE("got client conn: %p\n", conn);
     luvL_object_init(s, conn);
-    int rv = uv_accept(&self->h.stream, &conn->h.stream);
+    rv = uv_accept(&self->h.stream, &conn->h.stream);
     TRACE("accept returned ok\n");
     if (rv) {
       uv_err_t err = uv_last_error(self->h.stream.loop);
@@ -123,9 +125,11 @@ static void _listen_cb(uv_stream_t* server, int status) {
 }
 
 static int luv_stream_listen(lua_State* L) {
+  luv_object_t* self;
+  int backlog;
   luaL_checktype(L, 1, LUA_TUSERDATA);
-  luv_object_t* self = (luv_object_t*)lua_touserdata(L, 1);
-  int backlog = luaL_optinteger(L, 2, 128);
+  self = (luv_object_t*)lua_touserdata(L, 1);
+  backlog = luaL_optinteger(L, 2, 128);
   if (uv_listen(&self->h.stream, backlog, _listen_cb)) {
     uv_err_t err = uv_last_error(self->h.stream.loop);
     TRACE("listen error\n");
@@ -135,15 +139,16 @@ static int luv_stream_listen(lua_State* L) {
 }
 
 static int luv_stream_accept(lua_State *L) {
-  luaL_checktype(L, 1, LUA_TUSERDATA);
   luv_object_t* self = (luv_object_t*)lua_touserdata(L, 1);
   luv_object_t* conn = (luv_object_t*)lua_touserdata(L, 2);
 
   luv_state_t* curr = luvL_state_self(L);
+  luaL_checktype(L, 1, LUA_TUSERDATA);
 
   if (self->count) {
-    self->count--;
-    int rv = uv_accept(&self->h.stream, &conn->h.stream);
+    int rv;
+	self->count--;
+    rv = uv_accept(&self->h.stream, &conn->h.stream);
     if (rv) {
       uv_err_t err = uv_last_error(self->h.stream.loop);
       lua_settop(L, 0);
@@ -257,8 +262,8 @@ static int luv_stream_write(lua_State* L) {
 static int luv_stream_shutdown(lua_State* L) {
   luv_object_t* self = (luv_object_t*)lua_touserdata(L, 1);
   if (!luvL_object_is_shutdown(self)) {
-    self->flags |= LUV_OSHUTDOWN;
     luv_state_t* curr = luvL_state_self(L);
+    self->flags |= LUV_OSHUTDOWN;
     uv_shutdown(&curr->req.shutdown, &self->h.stream, _shutdown_cb);
     return luvL_cond_wait(&self->rouse, curr);
   }

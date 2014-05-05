@@ -1,14 +1,15 @@
 #include "luv.h"
 
 void _exit_cb(uv_process_t* handle, int status, int sigterm) {
-  TRACE("EXIT : status %i, sigterm %i\n", status, sigterm);
   luv_object_t* self = container_of(handle, luv_object_t, h);
+  lua_State* L;
+  TRACE("EXIT : status %i, sigterm %i\n", status, sigterm);
 
   if (status == -1) {
     TRACE("ERROR: %s\n", uv_strerror(uv_last_error(self->state->loop)));
   }
 
-  lua_State* L = self->state->L;
+  L = self->state->L;
   lua_pushinteger(L, status);
   lua_pushinteger(L, sigterm);
 
@@ -36,6 +37,10 @@ static int luv_new_process(lua_State* L) {
   char** env;
   uv_process_options_t opts;
   int rv;
+  uv_stdio_container_t stdio[3];
+  const char* stdfh_names[] = { "stdin", "stdout", "stderr" };
+  luv_state_t*  curr ;
+  luv_object_t* self ;
 
   luaL_checktype(L, 2, LUA_TTABLE); /* options */
   memset(&opts, 0, sizeof(uv_process_options_t));
@@ -91,10 +96,8 @@ static int luv_new_process(lua_State* L) {
   opts.env     = env;
   opts.cwd     = cwd;
 
-  uv_stdio_container_t stdio[3];
   opts.stdio_count = 3;
 
-  const char* stdfh_names[] = { "stdin", "stdout", "stderr" };
   for (i = 0; i < 3; i++) {
     lua_getfield(L, 2, stdfh_names[i]);
     if (lua_isnil(L, -1)) {
@@ -119,9 +122,9 @@ static int luv_new_process(lua_State* L) {
   }
   lua_pop(L, 1);
 
-  luv_state_t*  curr = luvL_state_self(L);
+  curr = luvL_state_self(L);
 
-  luv_object_t* self = (luv_object_t*)lua_newuserdata(L, sizeof(luv_object_t));
+  self = (luv_object_t*)lua_newuserdata(L, sizeof(luv_object_t));
   luaL_getmetatable(L, LUV_PROCESS_T);
   lua_setmetatable(L, -2);
 

@@ -39,15 +39,17 @@ int luvL_fiber_resume(luv_fiber_t* self, int narg) {
 }
 
 luv_fiber_t* luvL_fiber_create(luv_state_t* outer, int narg) {
-  TRACE("spawn fiber as child of: %p\n", outer);
-
   luv_fiber_t* self;
   lua_State* L = outer->L;
+  int base ;
+  lua_State* L1;
 
-  int base = lua_gettop(L) - narg + 1;
+  TRACE("spawn fiber as child of: %p\n", outer);
+
+  base = lua_gettop(L) - narg + 1;
   luaL_checktype(L, base, LUA_TFUNCTION);
 
-  lua_State* L1 = lua_newthread(L);
+  L1 = lua_newthread(L);
   lua_insert(L, base);                             /* [thread, func, ...] */
 
   lua_checkstack(L1, narg);

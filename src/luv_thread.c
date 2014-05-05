@@ -20,8 +20,8 @@ int luvL_thread_yield(luv_thread_t* self, int narg) {
 
 int luvL_thread_suspend(luv_thread_t* self) {
   if (self->flags & LUV_FREADY) {
-    self->flags &= ~LUV_FREADY;
     int active = 0;
+    self->flags &= ~LUV_FREADY;
     do {
       TRACE("loop top\n");
       luvL_thread_loop(self);
@@ -124,10 +124,10 @@ int luvL_thread_once(luv_thread_t* self) {
         case 0: {
           /* normal exit, wake up joining states */
           int i, narg;
+		  ngx_queue_t* q;
+		  luv_state_t* s;
           narg = lua_gettop(fiber->L);
           TRACE("[%p] normal exit - fiber: %p, narg: %i\n", self, fiber, narg);
-          ngx_queue_t* q;
-          luv_state_t* s;
           while (!ngx_queue_empty(&fiber->rouse)) {
             q = ngx_queue_head(&fiber->rouse);
             s = ngx_queue_data(q, luv_state_t, join);
@@ -195,16 +195,16 @@ void luvL_thread_init_main(lua_State* L) {
 
 static void _thread_enter(void* arg) {
   luv_thread_t* self = (luv_thread_t*)arg;
-
+  int nargs,rv;
   luvL_codec_decode(self->L);
   lua_remove(self->L, 1);
 
   luaL_checktype(self->L, 1, LUA_TFUNCTION);
   lua_pushcfunction(self->L, luvL_traceback);
   lua_insert(self->L, 1);
-  int nargs = lua_gettop(self->L) - 2;
+  nargs = lua_gettop(self->L) - 2;
 
-  int rv = lua_pcall(self->L, nargs, LUA_MULTRET, 1);
+  rv = lua_pcall(self->L, nargs, LUA_MULTRET, 1);
   lua_remove(self->L, 1); /* traceback */
 
   if (rv) { /* error */
@@ -224,11 +224,12 @@ static void _thread_enter(void* arg) {
 luv_thread_t* luvL_thread_create(luv_state_t* outer, int narg) {
   lua_State* L = outer->L;
   int base;
+  luv_thread_t* self;
 
   /* ..., func, arg1, ..., argN */
   base = lua_gettop(L) - narg + 1;
 
-  luv_thread_t* self = (luv_thread_t*)lua_newuserdata(L, sizeof(luv_thread_t));
+  self = (luv_thread_t*)lua_newuserdata(L, sizeof(luv_thread_t));
   luaL_getmetatable(L, LUV_THREAD_T);
   lua_setmetatable(L, -2);
   lua_insert(L, base++);
@@ -277,6 +278,7 @@ static int luv_new_thread(lua_State* L) {
 static int luv_thread_join(lua_State* L) {
   luv_thread_t* self = (luv_thread_t*)luaL_checkudata(L, 1, LUV_THREAD_T);
   luv_thread_t* curr = luvL_thread_self(L);
+  int nret;
 
   luvL_thread_ready(self);
   luvL_thread_suspend(curr);
@@ -284,7 +286,7 @@ static int luv_thread_join(lua_State* L) {
 
   lua_settop(L, 0);
 
-  int nret = lua_gettop(self->L);
+  nret = lua_gettop(self->L);
   luvL_codec_encode(self->L, nret);
   lua_xmove(self->L, L, 1);
   luvL_codec_decode(L);

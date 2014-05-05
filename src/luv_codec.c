@@ -18,8 +18,9 @@ static int encode_table(lua_State* L, luv_buf_t *buf, int seen);
 static int decode_table(lua_State* L, luv_buf_t* buf, int seen);
 
 luv_buf_t* luvL_buf_new(size_t size) {
+  luv_buf_t* buf;		
   if (!size) size = 128;
-  luv_buf_t* buf = (luv_buf_t*)malloc(sizeof(luv_buf_t));
+  buf = (luv_buf_t*)malloc(sizeof(luv_buf_t));
   buf->base = (uint8_t*)malloc(size);
   buf->size = size;
   buf->head = buf->base;
@@ -35,14 +36,15 @@ void luvL_buf_close(luv_buf_t* buf) {
 
 void luvL_buf_need(luv_buf_t* buf, size_t len) {
   size_t size = buf->size;
+  ptrdiff_t head,need;
   if (!size) {
     size = 128;
     buf->base = (uint8_t*)malloc(size);
     buf->size = size;
     buf->head = buf->base;
   }
-  ptrdiff_t head = buf->head - buf->base;
-  ptrdiff_t need = head + len;
+  head = buf->head - buf->base;
+  need = head + len;
   while (size < need) size *= 2;
   if (size > buf->size) {
     buf->base = (uint8_t*)realloc(buf->base, size);
@@ -66,9 +68,10 @@ void luvL_buf_write(luv_buf_t* buf, uint8_t* data, size_t len) {
   buf->head += len;
 }
 void luvL_buf_write_uleb128(luv_buf_t* buf, uint32_t val) {
-  luvL_buf_need(buf, 5);
   size_t   n = 0;
-  uint8_t* p = buf->head;
+  uint8_t* p;
+  luvL_buf_need(buf, 5);
+  p = buf->head;
   for (; val >= 0x80; val >>= 7) {
     p[n++] = (uint8_t)((val & 0x7f) | 0x80);
   }
@@ -121,8 +124,7 @@ uint8_t luvL_buf_peek(luv_buf_t* buf) {
   luvL_buf_put(buf, LUV_CODEC_TUSR); \
   lua_pushvalue(L, -2); \
   lua_call(L, 1, 2); \
-  int cbt = lua_type(L, -2); \
-  if (!(cbt == LUA_TFUNCTION || cbt == LUA_TSTRING)) { \
+  if (!(lua_type(L, -2) == LUA_TFUNCTION || lua_type(L, -2) == LUA_TSTRING)) { \
     luaL_error(L, "__codec must return either a function or a string"); \
   } \
   encode_value(L, buf, -2, seen); \
@@ -194,8 +196,9 @@ static void encode_value(lua_State* L, luv_buf_t* buf, int val, int seen) {
     }
     else {
       int i;
-      luv_buf_t b; b.base = NULL; b.head = NULL; b.size = 0;
-      lua_Debug ar;
+	  lua_Debug ar;
+      luv_buf_t b; 
+	  b.base = NULL; b.head = NULL; b.size = 0;
 
       lua_pop(L, 1); /* pop nil */
 
@@ -314,8 +317,9 @@ static void decode_value(lua_State* L, luv_buf_t* buf, int seen) {
     break;
   }
   case LUA_TSTRING: {
+	uint8_t* ptr;
     len = (size_t)luvL_buf_read_uleb128(buf);
-    uint8_t* ptr = luvL_buf_read(buf, len);
+    ptr = luvL_buf_read(buf, len);
     lua_pushlstring(L, (const char *)ptr, len);
     break;
   }
@@ -353,8 +357,9 @@ static void decode_value(lua_State* L, luv_buf_t* buf, int seen) {
     }
     else {
       size_t i;
+	  const char* code;
       len = luvL_buf_read_uleb128(buf);
-      const char* code = (char *)luvL_buf_read(buf, len);
+      code = (char *)luvL_buf_read(buf, len);
       if (luaL_loadbuffer(L, code, len, "=chunk")) {
         luaL_error(L, "failed to load chunk\n");
       }
@@ -441,9 +446,9 @@ int luvL_codec_decode(lua_State* L) {
   int nval, seen, i;
   int top = lua_gettop(L);
 
+  const char* data = luaL_checklstring(L, 1, &len);
   luv_buf_t buf; buf.base = NULL; buf.head = NULL; buf.size = 0;
 
-  const char* data = luaL_checklstring(L, 1, &len);
   luvL_buf_init(&buf, (uint8_t*)data, len);
 
   buf.head = buf.base;

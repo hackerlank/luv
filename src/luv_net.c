@@ -45,6 +45,7 @@ static int luv_getaddrinfo(lua_State* L) {
   const char* node      = NULL;
   const char* service   = NULL;
   struct addrinfo hints;
+  int rv;
 
   if (!lua_isnoneornil(L, 1)) {
     node = luaL_checkstring(L, 1);
@@ -108,7 +109,7 @@ static int luv_getaddrinfo(lua_State* L) {
     lua_pop(L, 1);
   }
 
-  int rv = uv_getaddrinfo(loop, req, _getaddrinfo_cb, node, service, &hints);
+  rv = uv_getaddrinfo(loop, req, _getaddrinfo_cb, node, service, &hints);
   if (rv) {
     uv_err_t err = uv_last_error(loop);
     return luaL_error(L, uv_strerror(err));
@@ -162,22 +163,25 @@ static int luv_tcp_connect(lua_State *L) {
 
 static int luv_tcp_nodelay(lua_State* L) {
   luv_object_t* self = (luv_object_t*)luaL_checkudata(L, 1, LUV_NET_TCP_T);
+  int enable;
+  int rv;
   luaL_checktype(L, 2, LUA_TBOOLEAN);
-  int enable = lua_toboolean(L, 2);
+  enable = lua_toboolean(L, 2);
   lua_settop(L, 2);
-  int rv = uv_tcp_nodelay(&self->h.tcp, enable);
+  rv = uv_tcp_nodelay(&self->h.tcp, enable);
   lua_pushinteger(L, rv);
   return 1;
 }
 static int luv_tcp_keepalive(lua_State* L) {
   luv_object_t* self = (luv_object_t*)luaL_checkudata(L, 1, LUV_NET_TCP_T);
-  luaL_checktype(L, 2, LUA_TBOOLEAN);
   int enable = lua_toboolean(L, 2);
   unsigned int delay = 0;
+  int rv;
+  luaL_checktype(L, 2, LUA_TBOOLEAN);
   if (enable) {
     delay = luaL_checkint(L, 3);
   }
-  int rv = uv_tcp_keepalive(&self->h.tcp, enable, delay);
+  rv = uv_tcp_keepalive(&self->h.tcp, enable, delay);
   lua_settop(L, 1);
   lua_pushinteger(L, rv);
   return 1;
