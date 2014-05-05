@@ -4,7 +4,7 @@ void luvL_thread_ready(luv_thread_t* self) {
   if (!(self->flags & LUV_FREADY)) {
     TRACE("SET READY\n");
     self->flags |= LUV_FREADY;
-    uv_async_send(&self->async);
+    //uv_async_send(&self->async); 
   }
 }
 
@@ -25,12 +25,12 @@ int luvL_thread_suspend(luv_thread_t* self) {
     do {
       TRACE("loop top\n");
       luvL_thread_loop(self);
-      active = uv_run_once(self->loop);
-      TRACE("uv_run_once returned, active: %i\n", active);
-      if (self->flags & LUV_FREADY) {
+	  if (self->flags & LUV_FREADY) {
         TRACE("main ready, breaking\n");
         break;
       }
+	  active = uv_run_once(self->loop);
+	  TRACE("uv_run_once returned, active: %i\n", active);
     }
     while (active);
     TRACE("back in main\n");
@@ -108,7 +108,7 @@ int luvL_thread_once(luv_thread_t* self) {
 
       self->curr = (luv_state_t*)fiber;
       TRACE("[%p] calling lua_resume on: %p\n", self, fiber);
-      stat = lua_resume(fiber->L, narg);
+      stat = lua_resume(fiber->L, NULL, narg);
       TRACE("resume returned\n");
       self->curr = (luv_state_t*)self;
 

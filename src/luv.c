@@ -54,23 +54,26 @@ int luvL_lib_encoder(lua_State* L) {
 }
 
 int luvL_new_module(lua_State* L, const char* name, luaL_Reg* funcs) {
-  lua_newtable(L);
+  luaL_newlib(L,funcs);
 
+  //c.__name = name
   lua_pushstring(L, name);
   lua_setfield(L, -2, "__name");
 
+  //setmetable(c,c)
   lua_pushvalue(L, -1);
   lua_setmetatable(L, -2);
 
+  //c.__codec = luvL_lib_encoder
   lua_pushcfunction(L, luvL_lib_encoder);
   lua_setfield(L, -2, "__codec");
 
   lua_pushvalue(L, -1);
   lua_setfield(L, LUA_REGISTRYINDEX, name);
 
-  if (funcs) {
-    luaL_register(L, NULL, funcs);
-  }
+  //if (funcs) {
+  //  luaL_register(L, NULL, funcs);
+  //}
   return 1;
 }
 
@@ -386,12 +389,7 @@ LUALIB_API int luaopen_luv(lua_State *L) {
     curr = luvL_state_self(L);
     
     for (i = 0; i < 3; i++) {
-#ifdef WIN32
-      const uv_file fh = GetStdHandle(i == 0 ? STD_INPUT_HANDLE
-       : (i == 1 ? STD_OUTPUT_HANDLE : STD_ERROR_HANDLE));
-#else
-      const uv_file fh = i;
-#endif
+	  const uv_file fh = i;
       stdfh = (luv_object_t*)lua_newuserdata(L, sizeof(luv_object_t));
       luaL_getmetatable(L, LUV_PIPE_T);
       lua_setmetatable(L, -2);

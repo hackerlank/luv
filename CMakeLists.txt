@@ -9,7 +9,7 @@ set(VERSION_MINOR 1)
 # configurable options
 set(USE_ZMQ OFF)
 set(USE_HTTP OFF)
-set(USE_STRICT ON)
+set(USE_STRICT OFF)
 
 option(USE_ZMQ "Include zmq" ${USE_ZMQ})
 option(USE_HTTP "Include http" ${USE_HTTP})

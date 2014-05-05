@@ -35,7 +35,7 @@ int luvL_fiber_suspend(luv_fiber_t* self) {
 }
 int luvL_fiber_resume(luv_fiber_t* self, int narg) {
   luvL_fiber_ready(self);
-  return lua_resume(self->L, narg);
+  return lua_resume(self->L, NULL, narg);
 }
 
 luv_fiber_t* luvL_fiber_create(luv_state_t* outer, int narg) {

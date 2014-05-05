@@ -18,6 +18,11 @@ extern "C" {
 }
 #endif
 
+//5.1 --> 5.2
+#define LUA_GLOBALSINDEX    LUA_RIDX_GLOBALS
+#define luaL_register(a,b,c) luaL_setfuncs(a,c,0)
+#define lua_objlen lua_rawlen
+
 #include "uv/include/uv.h"
 #include "ngx-queue.h"
 
@@ -27,11 +32,12 @@ extern "C" {
 #endif
 
 #undef LUV_DEBUG
+//#define LUV_DEBUG
 
 #ifdef LUV_DEBUG
 #  define TRACE(fmt, ...) do { \
     fprintf(stderr, "%s: %d: %s: " fmt, \
-    __FILE__, __LINE__, __func__, ##__VA_ARGS__); \
+    __FILE__, __LINE__, __FUNCTION__, ##__VA_ARGS__); \
   } while (0)
 #else
 #  define TRACE(fmt, ...) ((void)0)

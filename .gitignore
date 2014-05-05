@@ -12,5 +12,9 @@ CMakeFiles
 Win32
 src/lua
 luv.dir
-
-
+CMakeLists.txt
+Debug
+Release
+*.user
+*.dll
+*.exe
