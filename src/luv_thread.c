@@ -4,7 +4,7 @@ void luvL_thread_ready(luv_thread_t* self) {
   if (!(self->flags & LUV_FREADY)) {
     TRACE("SET READY\n");
     self->flags |= LUV_FREADY;
-    //uv_async_send(&self->async); 
+    uv_async_send(&self->async); 
   }
 }
 

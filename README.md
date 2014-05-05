@@ -1,6 +1,7 @@
 # NAME
 
-Luv - Thermonuclear battery pack for Lua
+Luv - Thermonuclear battery pack for Lua 
+(just make it compiled user win32,lua 5.2)
 
 # SYNOPSIS
 

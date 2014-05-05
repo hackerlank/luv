@@ -54,7 +54,7 @@ int luvL_lib_encoder(lua_State* L) {
 }
 
 int luvL_new_module(lua_State* L, const char* name, luaL_Reg* funcs) {
-  luaL_newlib(L,funcs);
+  lua_newtable(L);
 
   //c.__name = name
   lua_pushstring(L, name);
@@ -71,9 +71,9 @@ int luvL_new_module(lua_State* L, const char* name, luaL_Reg* funcs) {
   lua_pushvalue(L, -1);
   lua_setfield(L, LUA_REGISTRYINDEX, name);
 
-  //if (funcs) {
-  //  luaL_register(L, NULL, funcs);
-  //}
+  if (funcs) {
+    luaL_register(L, NULL, funcs);
+  }
   return 1;
 }
 
