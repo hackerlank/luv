@@ -213,12 +213,12 @@ int luvL_state_is_active(luv_state_t* state);
 void luvL_state_ready  (luv_state_t* state);
 int  luvL_state_yield  (luv_state_t* state, int narg);
 int  luvL_state_suspend(luv_state_t* state);
-int  luvL_state_resume (luv_state_t* state, int narg);
+int  luvL_state_resume (luv_state_t* state, lua_State* from, int narg);
 
 void luvL_fiber_ready  (luv_fiber_t* fiber);
 int  luvL_fiber_yield  (luv_fiber_t* fiber, int narg);
 int  luvL_fiber_suspend(luv_fiber_t* fiber);
-int  luvL_fiber_resume (luv_fiber_t* fiber, int narg);
+int  luvL_fiber_resume (luv_fiber_t* fiber, lua_State* from, int narg);
 
 int  luvL_thread_loop   (luv_thread_t* thread);
 int  luvL_thread_once   (luv_thread_t* thread);

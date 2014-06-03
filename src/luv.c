@@ -309,6 +309,7 @@ LUALIB_API int luaopen_luv(lua_State *L) {
 #endif
 
   int i;
+  int rt;
   uv_loop_t*    loop;
   luv_state_t*  curr;
   luv_object_t* stdfh;
@@ -388,18 +389,20 @@ LUALIB_API int luaopen_luv(lua_State *L) {
     loop = luvL_event_loop(L);
     curr = luvL_state_self(L);
     
+#ifndef WIN32 //uv_pipe_open will give -1
     for (i = 0; i < 3; i++) {
 	  const uv_file fh = i;
       stdfh = (luv_object_t*)lua_newuserdata(L, sizeof(luv_object_t));
       luaL_getmetatable(L, LUV_PIPE_T);
       lua_setmetatable(L, -2);
       luvL_object_init(curr, stdfh);
-      uv_pipe_init(loop, &stdfh->h.pipe, 0);
-      uv_pipe_open(&stdfh->h.pipe, fh);
+      rt = uv_pipe_init(loop, &stdfh->h.pipe, 0);
+      rt = uv_pipe_open(&stdfh->h.pipe, fh);
       lua_pushvalue(L, -1);
       lua_setfield(L, LUA_REGISTRYINDEX, stdfhs[i]);
       lua_setfield(L, -2, stdfhs[i]);
     }
+#endif
   }
 
   /* luv.net */

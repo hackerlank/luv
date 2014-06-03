@@ -108,7 +108,7 @@ int luvL_thread_once(luv_thread_t* self) {
 
       self->curr = (luv_state_t*)fiber;
       TRACE("[%p] calling lua_resume on: %p\n", self, fiber);
-      stat = lua_resume(fiber->L, NULL, narg);
+      stat = lua_resume(fiber->L, self->L, narg);
       TRACE("resume returned\n");
       self->curr = (luv_state_t*)self;
 

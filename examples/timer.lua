@@ -1,6 +1,5 @@
-print("hi")
 local luv = require('luv')
-print("hi2")
+
 local f1 = luv.fiber.create(function()
    print("ENTER")
    local t1 = luv.timer.create()
@@ -10,7 +9,8 @@ local f1 = luv.fiber.create(function()
       print(t1:wait())
    end
    t1:stop()
+   print("EXIT")
 end)
 
 f1:join()
-
+print("END")

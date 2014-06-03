@@ -21,6 +21,7 @@ local fun = luv.codec.decode(str)
 print(fun().answer)
 
 local obj = { answer = 42 }
+--[[
 setmetatable(obj, {
    __codec = function(o)
       print("__codec called with:", o)
@@ -31,6 +32,7 @@ setmetatable(obj, {
       end, 42
    end
 })
+--]]
 
 local str = luv.codec.encode(obj)
 print(string.format('%q', str))
